@@ -3,12 +3,12 @@
 
 
 
-libpmemobj-cpp workshop
+## libpmemobj-cpp workshop ##
 
 These are the materials used during the workshop:
-	slides.pdf contains the slides shown
-	Commands demonstrated during the workshop are listed below.
-	Source files for programming examples are in this repo.
+- slides.pdf contains the slides shown
+- Commands demonstrated during the workshop are listed below.
+- Source files for programming examples are in this repo.
 These instructions are designed to work on the workshop guest VMs.
 Start by cloning this repo, so you can easily cut and paste commands from
 this README into your shell.

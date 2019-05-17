@@ -39,6 +39,12 @@
 #include <iostream>
 #include <string>
 
+#include <libpmemobj++/make_persistent.hpp>
+#include <libpmemobj++/p.hpp>
+#include <libpmemobj++/persistent_ptr.hpp>
+#include <libpmemobj++/pool.hpp>
+#include <libpmemobj++/transaction.hpp>
+
 enum queue_op {
 	PUSH,
 	POP,
@@ -122,8 +128,9 @@ int
 main(int argc, char *argv[])
 {
 	auto path = argv[1];
-	(void) path; // Use this to open a pool
 
+        // auto pool = pmem::obj::pool<queue>::open(path, "queue");
+	// auto q = pool.root();
 	queue q;
 
 	while (1) {

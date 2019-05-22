@@ -37,6 +37,7 @@
 #include <libpmemobj++/pext.hpp>
 #include <libpmemobj++/pool.hpp>
 #include <libpmemobj++/transaction.hpp>
+#include <libpmemobj.h>
 #include <stdexcept>
 #include <string>
 
@@ -60,6 +61,7 @@ namespace ptl = pmem::obj::experimental;
 
 using pmem::obj::delete_persistent;
 using pmem::obj::make_persistent;
+
 using pmem::obj::p;
 using pmem::obj::persistent_ptr;
 using pmem::obj::pool;
@@ -74,10 +76,11 @@ using pmem::obj::transaction;
 template <typename Key, typename Value, std::size_t N>
 class kv {
 private:
-	using bucket_type = ptl::vector<std::pair<Key, Value>>;
+	using bucket_type = ptl::vector<std::pair<Key, std::size_t>>;
 	using table_type = ptl::array<bucket_type, N>;
 
 	table_type table;
+	ptl::vector<Value> values;
 
 public:
 	using value_type = Value;
@@ -92,7 +95,7 @@ public:
 		for (auto &e : table[index])
 		{
 			if (e.first == key)
-				return e.second;
+				return values[e.second];
 		}
 
 		throw std::out_of_range("no entry in simplekv");
@@ -103,16 +106,30 @@ public:
 	{
 		auto index = std::hash<Key>{}(key) % N;
 
-		for (auto &e : table[index])
-		{
-			if (e.first == key)
+		pool_base pop = pool_base(pmemobj_pool_by_ptr(this));
+		transaction::run(pop, [&](){
+			for (std::size_t i = 0; i < table[index].size(); ++i)
 			{
-				e.second = val;
-                        	return;
+				if (table[index][i].first == key)
+				{
+					values[table[index][i].second] = val;
+					return;
+				}
 			}
-		}
 
-		table[index].emplace_back(key, val);
+			values.emplace_back(val);
+			table[index].emplace_back(key, values.size() - 1);
+		});
+	}
+
+	auto begin() -> decltype(values.begin())
+	{
+		return values.begin();
+	}
+
+	auto end() -> decltype(values.end())
+	{
+		return values.end();
 	}
 };
 

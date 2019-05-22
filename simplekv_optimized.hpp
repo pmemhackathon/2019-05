@@ -105,6 +105,15 @@ public:
 	{
 		auto index = std::hash<Key>{}(key) % N;
 
+		for (std::size_t i = 0; i < table[index].size(); ++i)
+		{
+			if (table[index][i].first == key)
+			{
+				values[table[index][i].second] = val;
+				return;
+			}
+		}
+
 		values.emplace_back(val);
 		table[index].emplace_back(key, values.size() - 1);
 	}

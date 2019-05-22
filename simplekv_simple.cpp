@@ -80,10 +80,12 @@ main(int argc, char *argv[])
 		r->simplekv = make_persistent<simplekv_type>();
 	});
 
-	r->simplekv->insert(1, 1);
-	r->simplekv->insert(2, 3);
-	r->simplekv->insert(3, 4);
-	r->simplekv->insert(11, 11);
+	transaction::run(pop, [&]() {
+		r->simplekv->insert(1, 1);
+		r->simplekv->insert(2, 3);
+		r->simplekv->insert(3, 4);
+		r->simplekv->insert(11, 11);
+	});
 
 	assert(r->simplekv->at(1) == 1);
 	assert(r->simplekv->at(2) == 3);
